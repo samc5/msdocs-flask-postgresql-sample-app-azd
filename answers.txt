@@ -1,0 +1,13 @@
+
+SELECT DISTINCT *
+FROM public."Dhall" as dh
+LEFT JOIN public."{name}_Calories" as c ON c."Name" = dh."Name"
+WHERE "Location" ILIKE '%{name}%'
+
+SELECT *
+FROM public."Dhall"
+WHERE "Ingredients" ILIKE '%{name}%' 
+
+SELECT DISTINCT *
+FROM public."Dhall"
+WHERE "Meal Type" ILIKE '%{name}%'

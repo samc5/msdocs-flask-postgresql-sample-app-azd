@@ -1,11 +1,10 @@
 import os
 from datetime import datetime
-
-from flask import Flask, redirect, render_template, request, send_from_directory, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-
+from sqlalchemy import MetaData
 
 app = Flask(__name__, static_folder='static')
 csrf = CSRFProtect(app)
@@ -36,83 +35,88 @@ from models import Restaurant, Review
 
 @app.route('/', methods=['GET'])
 def index():
-    print('Request for index page received')
-    restaurants = Restaurant.query.all()
-    return render_template('index.html', restaurants=restaurants)
+    return render_template('index.html')
 
-@app.route('/<int:id>', methods=['GET'])
-def details(id):
-    restaurant = Restaurant.query.where(Restaurant.id == id).first()
-    reviews = Review.query.where(Review.restaurant == id)
-    return render_template('details.html', restaurant=restaurant, reviews=reviews)
+@app.route('/dining_hall/<name>', methods = ['GET'])
+def diningHall(name):
 
-@app.route('/create', methods=['GET'])
-def create_restaurant():
-    print('Request for add restaurant page received')
-    return render_template('create_restaurant.html')
+    # TODO Write SQL Query to get all food items at dining hall -> {name} 
 
-@app.route('/add', methods=['POST'])
+    sql = f'''
+        SELECT NULL
+    '''
+
+    with db.engine.connect() as conn:
+        result = conn.execute(db.text(sql)).fetchall()
+
+    rows = [dict(row._mapping) for row in result]
+    return render_template('index.html', results = rows)
+
+@app.route('/meat/<name>', methods = ['GET'])
+def meat(name):
+
+    # TODO Write SQL Query to get all food items containing meat -> {name} 
+
+    sql = f'''
+        SELECT NULL
+    '''
+
+    with db.engine.connect() as conn:
+        result = conn.execute(db.text(sql)).fetchall()
+
+    rows = [dict(row._mapping) for row in result]
+    return render_template('index.html', results = rows)
+
+@app.route('/meal_type/<name>', methods = ['GET'])
+def mealType(name):
+    name = name.lower()
+
+    # TODO Write SQL Query to get all food item served during meal_type -> {name} 
+
+    sql = f'''
+        SELECT NULL
+    '''
+    
+    with db.engine.connect() as conn:
+        result = conn.execute(db.text(sql)).fetchall()
+
+    rows = [dict(row._mapping) for row in result]
+    return render_template('index.html', results = rows)
+
+
+@app.route('/add_dhall', methods=['POST'])
 @csrf.exempt
-def add_restaurant():
+def add_dhall():
     try:
-        name = request.values.get('restaurant_name')
-        street_address = request.values.get('street_address')
-        description = request.values.get('description')
-    except (KeyError):
-        # Redisplay the question voting form.
-        return render_template('add_restaurant.html', {
-            'error_message': "You must include a restaurant name, address, and description",
+        name = request.form.get('name')
+        ingredients = request.form.get('ingredients')
+        station = request.form.get('station')
+        location = request.form.get('location')
+        meal_type = request.form.get('meal_type')
+        item_id = request.form.get('item_id')  # BIGINT
+    except KeyError as e:
+        return jsonify({'error': f'Missing parameter: {str(e)}'}), 400
+
+    sql = '''
+        INSERT INTO public."Dhall" ("Name", "Ingredients", "Station", "Location", "Meal Type", "Item ID")
+        VALUES (:name, :ingredients, :station, :location, :meal_type, :item_id)
+    '''
+
+    with db.engine.begin() as conn:
+        conn.execute(db.text(sql), {
+            'name': name,
+            'ingredients': ingredients,
+            'station': station,
+            'location': location,
+            'meal_type': meal_type,
+            'item_id': int(item_id)
         })
-    else:
-        restaurant = Restaurant()
-        restaurant.name = name
-        restaurant.street_address = street_address
-        restaurant.description = description
-        db.session.add(restaurant)
-        db.session.commit()
 
-        return redirect(url_for('details', id=restaurant.id))
+    return redirect(url_for('index'))
 
-@app.route('/review/<int:id>', methods=['POST'])
-@csrf.exempt
-def add_review(id):
-    try:
-        user_name = request.values.get('user_name')
-        rating = request.values.get('rating')
-        review_text = request.values.get('review_text')
-    except (KeyError):
-        #Redisplay the question voting form.
-        return render_template('add_review.html', {
-            'error_message': "Error adding review",
-        })
-    else:
-        review = Review()
-        review.restaurant = id
-        review.review_date = datetime.now()
-        review.user_name = user_name
-        review.rating = int(rating)
-        review.review_text = review_text
-        db.session.add(review)
-        db.session.commit()
-
-    return redirect(url_for('details', id=id))
-
-@app.context_processor
-def utility_processor():
-    def star_rating(id):
-        reviews = Review.query.where(Review.restaurant == id)
-
-        ratings = []
-        review_count = 0
-        for review in reviews:
-            ratings += [review.rating]
-            review_count += 1
-
-        avg_rating = sum(ratings) / len(ratings) if ratings else 0
-        stars_percent = round((avg_rating / 5.0) * 100) if review_count > 0 else 0
-        return {'avg_rating': avg_rating, 'review_count': review_count, 'stars_percent': stars_percent}
-
-    return dict(star_rating=star_rating)
+@app.route('/add_dhall_form', methods=['GET'])
+def add_dhall_form():
+    return render_template('add.html')
 
 @app.route('/favicon.ico')
 def favicon():

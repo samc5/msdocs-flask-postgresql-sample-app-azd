@@ -41,32 +41,126 @@
   </style>
 {% endblock %}
 {% block content %}
-      <h1>Restaurants</h1>
+      <h1>BU Dining Hall Food Search</h1>
 
+      <div class="mb-4">
+          <form action="/" method="GET">
+              <button type="submit" class="btn btn-secondary">Clear</button>
+          </form>
+      </div>
+
+      <table class="table">
+        <thead>
+            <tr>
+                <th>Dining Hall</th>
+                <th>MEAT</th>
+                <th>Meal Type</th>
+            </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <form action="{{ url_for('diningHall', name = 'Warren' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Warren</button>
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('meat', name = 'Chicken' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Chicken</button>
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('mealType', name = 'Breakfast' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Breakfast</button>
+              </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <form action="{{ url_for('diningHall', name = 'West' )}}" method="GET">
+                    <button type="submit" class="btn btn-primary">West</button>
+                </form>
+            </td>
+            <td>
+              <form action="{{ url_for('meat', name = 'Beef' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Beef</button>
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('mealType', name = 'Lunch' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Lunch</button>
+              </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <form action="{{ url_for('diningHall', name = 'Marciano' )}}" method="GET">
+                <button type="submit" class="btn btn-primary">Marciano</button>
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('meat', name = 'Pork' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Pork</button>
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('mealType', name = 'Dinner' )}}" method="GET">
+                  <button type="submit" class="btn btn-primary">Dinner</button>
+              </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <form action="{{ url_for('diningHall', name = 'Granby' )}}" method="GET">
+                <button type="submit" class="btn btn-primary">Granby</button>
+              </form>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+
+        </tbody>
+    </table>
       {% if True %}
           <table class="table">
               <thead>
                   <tr>
                       <th>Name</th>
-                      <th>Rating</th>
-                      <th class="text-end">Details</th>
+                      <th>Ingredients</th>
+                      <th>Station</th>
+                      <th>Location</th>
+                      <th>Meal Type</th>
+                      <th>Calories</th>
                   </tr>
               </thead>
               <tbody>
-                  {% for restaurant in restaurants %}
-                      <tr>
-                          <td>{{ restaurant.name }}</td>
-                          <td>{% include "star_rating.html" %}</td>
-                          <td class="text-end"><a href="{{ url_for('details', id=restaurant.id) }}" class="btn btn-sm btn-primary">Details</a></td>
-                      </tr>
-                  {% endfor %}
+                {% for row in results %}
+                  <tr>
+                      <!-- Access the keys in each row dictionary -->
+                      <td>{{ row['Name'] }}</td>
+                      <td>{{ row['Ingredients'] }}</td>
+                      <td>{{ row['Station'] }}</td>
+                      <td>{{ row['Location'] }}</td>
+                      <td>{{ row['Meal Type'] }}</td>
+                      <td>{{ row['Calories'] }}</td>
+                  </tr>
+                {% endfor %}
               </tbody>
           </table>
+          <div class="mb-4">
+            <a href="{{ url_for('add_dhall_form') }}" class="btn btn-success">+ Add Dhall Item</a>
+          </div>
+          <form method="POST" action="/add_dhall">
+            <label>Name: <input name="name" required></label><br>
+            <label>Ingredients: <input name="ingredients" required></label><br>
+            <label>Station: <input name="station" required></label><br>
+            <label>Location: <input name="location" required></label><br>
+            <label>Meal Type: <input name="meal_type" required></label><br>
+            <label>Item ID: <input name="item_id" type="number" required></label><br>
+            <button type="submit">Add Dhall Item</button>
+          </form>    
       {% else %}
-          <p>No restaurants exist.  Select Add new restaurant to add one.</p>
+          <p>No food items exist.  Select Add new restaurant to add one.</p>
       {% endif %}
 
-      <div class="d-flex justify-content-end">
-              <a href="{{ url_for('create_restaurant') }}" class="btn btn-success px-4 gap-3">Add new restaurant</a>
-      </div>
 {% endblock %}
